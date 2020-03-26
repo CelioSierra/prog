@@ -1,0 +1,66 @@
+install.packages("questionr")
+
+########################## PACKAGES A CHARGER #####################
+library(ggplot2)
+library(questionr)
+library(readr)
+library(readxl)
+library(devtools)
+library(lattice)
+library(gmodels)
+library(questionr)
+library(ade4)
+library(effects)
+library(broom)
+library(JLutils)
+library(explor)
+library(RColorBrewer)
+
+######## TD n°1 ####
+
+
+ v <- c(2,1,6,4)
+
+v <- as.character(v)
+
+v <- factor(v)
+
+v<- data.frame(v)
+
+View(v)
+
+#permet de charger dans R une base de données au format xlsx
+ b<-read_excel("D:/IDUP cours/L3/2019-2020/S2/Introduction à R/ghp_mesheritiers_excel/GHP-MESHERITIERS-EXCEL.xlsx")
+
+
+View(b)
+
+###### stat descriptives sur une variable quantitative ######
+summary(b$V0254)
+
+#interroger la doc de R sur la fonction summary
+?summary
+
+#permet de savoir combien d'indiv n'ont pas de reponses a la question posee
+table(is.na(b$V0254))
+
+#moyenne sans prendre les valuers manquantes
+mean(b$V0254, na.rm=TRUE)
+
+
+hist(b$V0082, xlab='moyenne en biologie',
+     ylab='Effectifs',
+     main='Distribution des élèves selon moyenne de bio')
+
+######stat descriptive sur une variable qualitative #####
+
+#calcul de %
+freq(b$V0003)
+
+#calcul de % avec frequences cumulees
+freq(b$V0003, cum=TRUE)
+
+
+#calucl de % avec total indique a la fin
+freq(b$V0003,total=TRUE)
+
