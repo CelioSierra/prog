@@ -1,4 +1,5 @@
 install.packages("questionr")
+# il faut utiliser cette fonction pour installer tous les packages ci-dessous sur votre machine
 
 ########################## PACKAGES A CHARGER #####################
 library(ggplot2)
