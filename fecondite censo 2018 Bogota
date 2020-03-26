@@ -1,0 +1,431 @@
+
+########################## PACKAGES A CHARGER #####################
+
+remove(list = ls())
+
+library(ggplot2)
+library(questionr)
+library(readr)
+library(readxl)
+library(devtools)
+library(lubridate) # install_github('hadley/lubridate')
+library(lattice)
+library(gmodels)
+
+duplicated2 <- function(x){ 
+  if (sum(dup <- duplicated(x))==0) 
+    return(dup) 
+  if (class(x) %in% c("data.frame","matrix")) 
+    duplicated(rbind(x[dup,],x))[-(1:sum(dup))] 
+  else duplicated(c(x[dup],x))[-(1:sum(dup))] 
+}
+
+
+########### IMPORT DES BASES ####################
+
+#import base deja mergée dhv
+dhv <- read_csv("ECOS/Censo 2018 Bogota/11_Bogota_CSV A2/dhv.CSV")
+
+#si dhv déjà créée, inutile de lancer le reste
+
+
+#import de la base individus
+d <- read_csv("ECOS/Censo 2018 Bogota/11_Bogota_CSV A2/CNPV2018_5PER_A2_11.CSV")
+names(d)
+
+
+#import base menage
+h <- read_csv("ECOS/Censo 2018 Bogota/11_Bogota_CSV A2/CNPV2018_2HOG_A2_11.CSV")
+
+
+
+#import marco de georeferenciacion
+g <- read_csv("ECOS/Censo 2018 Bogota/11_Bogota_CSV A2/CNPV2018_MGN_A2_11.CSV")
+
+#import vivienda
+v <- read_csv("ECOS/Censo 2018 Bogota/11_Bogota_CSV A2/CNPV2018_1VIV_A2_11.CSV")
+
+
+
+
+
+#un identifiant cod_encuestas par vivienda
+table(duplicated(v$COD_ENCUESTAS))
+
+#en revanche, il peut y avoir plusieurs hogares par vivienda
+#exemple la vivienda 60341
+exempleh <-h[which(h$COD_ENCUESTAS=='60431'),]
+exemplev <-v[which(v$COD_ENCUESTAS=='60431'),]
+
+#dans la base individus on a "COD_ENCUESTAS"  qui correspond au logement
+# et P_NROHOG qui correspond au numéro du ménage dans le logement
+names(d)
+# table(d$P_NROHOG)va de 1 a 20
+
+#dans la base h on a aussi COD_ENCUESTAS qui correspond au logement et H_NROHOG
+#qui correspond au numero de menage
+names(h)
+
+
+#merge de la base hogar et individus, ATTENTION LONG A COMPILER
+dh<-merge(d,h,by.x = c('COD_ENCUESTAS', 'P_NROHOG'), by.y = c('COD_ENCUESTAS', 'H_NROHOG'))
+
+#on l'exporte en csv au cas où car c'est long à compiler
+write_csv(dh, 'ECOS/Censo 2018 Bogota/11_Bogota_CSV A2/dh.CSV')
+
+#dans vivienda on garde seulement CODIGO ENCUESTA et ESTRATO VA1_ESTRATO
+names(v)
+v2 <- v[,c("COD_ENCUESTAS","VA1_ESTRATO")]
+
+
+#merge de dh
+dhv <- merge (dh,v2,by='COD_ENCUESTAS')
+
+#on l'exporte en csv au cas où car c'est long à compiler
+write_csv(dhv, 'ECOS/Censo 2018 Bogota/11_Bogota_CSV A2/dhv.CSV')
+
+names(dhv)
+
+
+# un truc etrange, il n'y pas de localildad dans la base bogota
+# alors que normalement il y en a une vingtaine :
+# https://es.wikipedia.org/wiki/Anexo:Localidades_de_Bogot%C3%A1
+# mystère à élucider sinon impossible de faire de la carto à l'échelle de bogota
+names(g)
+table(g$UA1_LOCALIDAD)
+table(g$U_MZA)
+
+
+############## Reformatage variable avant toute chose #############
+
+d<-dhv
+
+
+
+
+#creation de l'age
+plot(table(d$P_EDADR))
+
+d$P_EDADl[d$P_EDADR=="1"]<-0
+d$P_EDADl[d$P_EDADR=="2"]<-5
+d$P_EDADl[d$P_EDADR=="3"]<-10
+d$P_EDADl[d$P_EDADR=="4"]<-15
+d$P_EDADl[d$P_EDADR=="5"]<-20
+d$P_EDADl[d$P_EDADR=="6"]<-25
+d$P_EDADl[d$P_EDADR=="7"]<-30
+d$P_EDADl[d$P_EDADR=="8"]<-35
+d$P_EDADl[d$P_EDADR=="9"]<-40
+d$P_EDADl[d$P_EDADR=="10"]<-45
+d$P_EDADl[d$P_EDADR=="11"]<-50
+d$P_EDADl[d$P_EDADR=="12"]<-55
+d$P_EDADl[d$P_EDADR=="13"]<-60
+d$P_EDADl[d$P_EDADR=="14"]<-65
+d$P_EDADl[d$P_EDADR=="15"]<-70
+d$P_EDADl[d$P_EDADR=="16"]<-75
+d$P_EDADl[d$P_EDADR=="17"]<-80
+d$P_EDADl[d$P_EDADR=="18"]<-85
+d$P_EDADl[d$P_EDADR=="19"]<-90
+d$P_EDADl[d$P_EDADR=="20"]<-95
+d$P_EDADl[d$P_EDADR=="21"]<-100
+
+d$P_EDADl<-as.numeric(d$P_EDADl)
+
+
+
+
+
+
+
+######ICF######
+#distribution du nb de femmes
+df <- d[which(d$P_SEXO=="2"), ]
+ff<-data.frame(table(df$P_EDADl))
+
+
+
+#distribution par age des femmes dont la derniere naissance est après 2016
+
+g<-data.frame(table(df$P_EDADl[df$PA2_ANO_UHNV=="2017" | df$PA2_ANO_UHNV=="2018"]))
+
+#en ajoutant aussi 2016
+#g<-data.frame(table(df$P_EDADl[df$PA2_ANO_UHNV=="2016" | df$PA2_ANO_UHNV=="2017" | df$PA2_ANO_UHNV=="2018"]))
+
+ffg<-merge(ff,g,by="Var1")
+
+
+ffg$tf <-ffg$Freq.y/ffg$Freq.x
+
+#il faut multiplier les taux quiquennaux par 5 pour avoir le pseudo ICF
+sum(ffg$tf)*5
+
+ffg<-ffg[which(ffg$Var1=='10' |ffg$Var1=='15' |ffg$Var1=='20' |ffg$Var1=='25'  
+          |ffg$Var1=='30' |ffg$Var1=='35'|ffg$Var1=='40'|ffg$Var1=='45'),]
+
+
+
+plot(ffg$Var1,ffg$tf ,xlab="Borne inf. âge quiquennal",ylab="taux de fecondite",main="Bogota 2018 censo")
+
+
+
+
+
+######## Analyse fecondité Estrato 1 ##############
+
+reserve <-d
+
+#mettre ici le numero de l'estrato
+d<- d[which(d$VA1_ESTRATO=="1"),]
+
+
+#distribution du nb de femmes
+df <- d[which(d$P_SEXO=="2"), ]
+ff<-data.frame(table(df$P_EDADl))
+
+
+
+#distribution par age des femmes dont la derniere naissance est après 2016
+
+g<-data.frame(table(df$P_EDADl[df$PA2_ANO_UHNV=="2017" | df$PA2_ANO_UHNV=="2018"]))
+
+
+ffg<-merge(ff,g,by="Var1")
+
+
+ffg$tf <-ffg$Freq.y/ffg$Freq.x
+
+#il faut multiplier les taux quiquennaux par 5 pour avoir le pseudo ICF
+sum(ffg$tf)*5
+
+ffg<-ffg[which(ffg$Var1=='10' |ffg$Var1=='15' |ffg$Var1=='20' |ffg$Var1=='25'  
+               |ffg$Var1=='30' |ffg$Var1=='35'|ffg$Var1=='40'|ffg$Var1=='45'),]
+
+
+
+plot(ffg$Var1,ffg$tf ,xlab="Borne inf. âge quiquennal",ylab="taux de fecondite",
+     main=paste("Estrato",d[1,61], "ICF =",round(sum(ffg$tf, na.rm=TRUE)*5,2)))
+
+
+
+d<-reserve
+
+
+
+######## Analyse fecondité Estrato 2 ##############
+
+reserve <-d
+
+#mettre ici le numero de l'estrato
+d<- d[which(d$VA1_ESTRATO=="2"),]
+
+
+#distribution du nb de femmes
+df <- d[which(d$P_SEXO=="2"), ]
+ff<-data.frame(table(df$P_EDADl))
+
+
+
+#distribution par age des femmes dont la derniere naissance est après 2016
+
+g<-data.frame(table(df$P_EDADl[df$PA2_ANO_UHNV=="2017" | df$PA2_ANO_UHNV=="2018"]))
+
+
+ffg<-merge(ff,g,by="Var1")
+
+
+ffg$tf <-ffg$Freq.y/ffg$Freq.x
+
+#il faut multiplier les taux quiquennaux par 5 pour avoir le pseudo ICF
+sum(ffg$tf)*5
+
+ffg<-ffg[which(ffg$Var1=='10' |ffg$Var1=='15' |ffg$Var1=='20' |ffg$Var1=='25'  
+               |ffg$Var1=='30' |ffg$Var1=='35'|ffg$Var1=='40'|ffg$Var1=='45'),]
+
+
+
+plot(ffg$Var1,ffg$tf ,xlab="Borne inf. âge quiquennal",ylab="taux de fecondite",
+     main=paste("Estrato",d[1,61], "ICF =",round(sum(ffg$tf, na.rm=TRUE)*5,2)))
+
+
+
+d<-reserve
+
+
+
+
+######## Analyse fecondité Estrato 3 ##############
+
+reserve <-d
+
+#mettre ici le numero de l'estrato
+d<- d[which(d$VA1_ESTRATO=="3"),]
+
+
+#distribution du nb de femmes
+df <- d[which(d$P_SEXO=="2"), ]
+ff<-data.frame(table(df$P_EDADl))
+
+
+
+#distribution par age des femmes dont la derniere naissance est après 2016
+
+g<-data.frame(table(df$P_EDADl[df$PA2_ANO_UHNV=="2017" | df$PA2_ANO_UHNV=="2018"]))
+
+
+ffg<-merge(ff,g,by="Var1")
+
+
+ffg$tf <-ffg$Freq.y/ffg$Freq.x
+
+#il faut multiplier les taux quiquennaux par 5 pour avoir le pseudo ICF
+sum(ffg$tf)*5
+
+ffg<-ffg[which(ffg$Var1=='10' |ffg$Var1=='15' |ffg$Var1=='20' |ffg$Var1=='25'  
+               |ffg$Var1=='30' |ffg$Var1=='35'|ffg$Var1=='40'|ffg$Var1=='45'),]
+
+
+
+plot(ffg$Var1,ffg$tf ,xlab="Borne inf. âge quiquennal",ylab="taux de fecondite",
+     main=paste("Estrato",d[1,61], "ICF =",round(sum(ffg$tf, na.rm=TRUE)*5,2)))
+
+
+
+
+
+d<-reserve
+
+
+
+######## Analyse fecondité Estrato 4 ##############
+
+reserve <-d
+
+#mettre ici le numero de l'estrato
+d<- d[which(d$VA1_ESTRATO=="4"),]
+
+
+#distribution du nb de femmes
+df <- d[which(d$P_SEXO=="2"), ]
+ff<-data.frame(table(df$P_EDADl))
+
+
+
+#distribution par age des femmes dont la derniere naissance est après 2016
+
+g<-data.frame(table(df$P_EDADl[df$PA2_ANO_UHNV=="2017" | df$PA2_ANO_UHNV=="2018"]))
+
+
+ffg<-merge(ff,g,by="Var1")
+
+
+ffg$tf <-ffg$Freq.y/ffg$Freq.x
+
+#il faut multiplier les taux quiquennaux par 5 pour avoir le pseudo ICF
+sum(ffg$tf)*5
+
+ffg<-ffg[which(ffg$Var1=='10' |ffg$Var1=='15' |ffg$Var1=='20' |ffg$Var1=='25'  
+               |ffg$Var1=='30' |ffg$Var1=='35'|ffg$Var1=='40'|ffg$Var1=='45'),]
+
+
+
+plot(ffg$Var1,ffg$tf ,xlab="Borne inf. âge quiquennal",ylab="taux de fecondite",
+     main=paste("Estrato",d[1,61], "ICF =",round(sum(ffg$tf, na.rm=TRUE)*5,2)))
+
+
+
+d<-reserve
+
+
+
+
+######## Analyse fecondité Estrato 5 ##############
+
+reserve <-d
+
+#mettre ici le numero de l'estrato
+d<- d[which(d$VA1_ESTRATO=="5"),]
+
+
+#distribution du nb de femmes
+df <- d[which(d$P_SEXO=="2"), ]
+ff<-data.frame(table(df$P_EDADl))
+
+
+
+#distribution par age des femmes dont la derniere naissance est après 2016
+
+g<-data.frame(table(df$P_EDADl[df$PA2_ANO_UHNV=="2017" | df$PA2_ANO_UHNV=="2018"]))
+
+
+ffg<-merge(ff,g,by="Var1")
+
+
+ffg$tf <-ffg$Freq.y/ffg$Freq.x
+
+#il faut multiplier les taux quiquennaux par 5 pour avoir le pseudo ICF
+sum(ffg$tf)*5
+
+ffg<-ffg[which(ffg$Var1=='10' |ffg$Var1=='15' |ffg$Var1=='20' |ffg$Var1=='25'  
+               |ffg$Var1=='30' |ffg$Var1=='35'|ffg$Var1=='40'|ffg$Var1=='45'),]
+
+
+
+plot(ffg$Var1,ffg$tf ,xlab="Borne inf. âge quiquennal",ylab="taux de fecondite",
+     main=paste("Estrato",d[1,61], "ICF =",round(sum(ffg$tf, na.rm=TRUE)*5,2)))
+
+
+
+d<-reserve
+
+
+
+
+
+
+
+
+######## Analyse fecondité Estrato 6 ##############
+
+reserve <-d
+
+#mettre ici le numero de l'estrato
+d<- d[which(d$VA1_ESTRATO=="6"),]
+
+
+#distribution du nb de femmes
+df <- d[which(d$P_SEXO=="2"), ]
+ff<-data.frame(table(df$P_EDADl))
+
+
+
+#distribution par age des femmes dont la derniere naissance est après 2016
+
+g<-data.frame(table(df$P_EDADl[df$PA2_ANO_UHNV=="2017" | df$PA2_ANO_UHNV=="2018"]))
+
+
+ffg<-merge(ff,g,by="Var1")
+
+
+ffg$tf <-ffg$Freq.y/ffg$Freq.x
+
+#il faut multiplier les taux quiquennaux par 5 pour avoir le pseudo ICF
+sum(ffg$tf)*5
+
+ffg<-ffg[which(ffg$Var1=='10' |ffg$Var1=='15' |ffg$Var1=='20' |ffg$Var1=='25'  
+               |ffg$Var1=='30' |ffg$Var1=='35'|ffg$Var1=='40'|ffg$Var1=='45'),]
+
+
+
+plot(ffg$Var1,ffg$tf ,xlab="Borne inf. âge quiquennal",ylab="taux de fecondite",
+     main=paste("Estrato",d[1,61], "ICF =",round(sum(ffg$tf, na.rm=TRUE)*5,2)))
+
+
+
+d<-reserve
+
+
+
+
+
+
+
+
