@@ -1,0 +1,89 @@
+# 3)	Installez tous les « packages » nécessaires 
+# au cours à l’aide de la fonction install.packages
+install.packages("ggplot2")
+install.packages("questionr")
+install.packages("readr")
+install.packages("readxl")
+install.packages("devtools")
+install.packages("lattice")
+install.packages("gmodels")
+install.packages("questionr")
+install.packages("ade4")
+install.packages("effects")
+install.packages("broom")
+install.packages("JLutils")
+install.packages("explor")
+install.packages("RColorBrewer")
+
+#4)	Chargez tous les packages que vous venez d’installer
+library(ggplot2)
+library(questionr)
+library(readr)
+library(readxl)
+library(devtools)
+library(lattice)
+library(gmodels)
+library(questionr)
+library(ade4)
+library(effects)
+library(broom)
+library(JLutils)
+library(explor)
+library(RColorBrewer)
+
+#5)	Importez la base sous R (nb mettez ici le bon chemin !)
+b<-read_excel("D:/IDUP cours/L3/2019-2020/S2/Introduction à R/ghp_mesheritiers_excel/GHP-MESHERITIERS-EXCEL.xlsx")
+
+
+
+#6)	Affichez la base pour avoir une idée de ce à quoi elle ressemble puis refermez cet affichage
+View(b)
+
+#7)	Interrogez la documentation de R sur la fonction summary
+?summary
+
+#8)En consultant le dictionnaire des codes,
+#trouvez la variable correspondant à l’âge à l’entrée à la maternelle.
+b$V0053
+
+#9)	Affichez les statistiques descriptives concernant cette variable.
+summary(b$V0053)
+
+#10) Faites une phrase avec le nombre 2.0000
+#La moitié des enfants sont entrés en maternelle avant l'âge de 2 ans
+
+#11) Que signifie NA’s 24 ?
+# Cela signifie que pour 24 élèves il y a des valeurs manquantes concernant
+#l'âge à l'entrée en maternelle
+
+#12)	Trouvez une fonction qui permette de calculer la médiane uniquement.
+median(b$V0053,na.rm=TRUE)
+
+#13)	Affichez les valeurs manquantes sur la console.
+is.na(b$V0053)
+
+#14)	Tracez un histogramme des élèves selon leur dernière note obtenue en français.
+# Veillez à bien mettre des titres aux axes et au graphique.
+
+hist(b$V0078, xlab="Moyenne obtenue en français",
+     ylab="Effectifs",
+     main="Distribution des élèves selon la moyenne obtenue en français")
+
+#15)	Quelle est la note modale ?
+#la note modale est 11
+
+
+#16) Calculez la proportion d’élèves
+#qui parlent de l’école à leurs parents tous les jours.
+freq(b$V0112)
+#cette proportion est de 49,2%
+
+#17)	Calculez la proportion d’élèves n’ayant jamais redoublé
+#ou redoublé qu’une seule fois.
+freq(b$V0005,cum=TRUE)
+#cette proportion est de 97,5%
+
+#18)	Calculez la répartition des élèves selon la catégorie sociale de leur mère,
+#en ordonnant les modalités de la plus représentée à la moins représentée.
+freq(b$V0827, sort="dec")
+
