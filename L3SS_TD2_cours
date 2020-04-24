@@ -1,0 +1,113 @@
+#Chargez tous les packages que vous venez d’installer
+library(ggplot2)
+library(questionr)
+library(readr)
+library(readxl)
+library(devtools)
+library(lattice)
+library(gmodels)
+library(questionr)
+library(ade4)
+library(effects)
+library(broom)
+library(JLutils)
+library(explor)
+library(RColorBrewer)
+
+#permet de charger dans R une base de données au format xlsx
+b<-read_excel("D:/IDUP cours/L3/2019-2020/S2/Introduction à R/ghp_mesheritiers_excel/GHP-MESHERITIERS-EXCEL.xlsx")
+
+
+#tri croisé
+CrossTable(b$V0007,b$V0065)
+
+
+#tri croisé juste avec les effectifs
+CrossTable(b$V0007,b$V0065,
+           prop.chisq=FALSE,
+           prop.t=FALSE,
+           prop.c=FALSE,
+           prop.r=FALSE)
+
+
+#tri croisé juste avec les effectifs et les proportions du tableau
+#la somme des proportions fait 100%
+CrossTable(b$V0007,b$V0065,
+           prop.chisq=FALSE,
+           prop.t=TRUE,
+           prop.c=FALSE,
+           prop.r=FALSE)
+
+#tri croisé juste avec les effectifs et les frequences en ligne
+#la somme des frequences en ligne fait 100%
+#nb : en anglais ligne se dit 'row' 
+CrossTable(b$V0007,b$V0065,
+           prop.chisq=FALSE,
+           prop.t=FALSE,
+           prop.c=FALSE,
+           prop.r=TRUE)
+
+#tri croisé juste avec les effectifs et les frequences en colonne
+#la somme des frequences en colonne fait 100%
+CrossTable(b$V0007,b$V0065,
+           prop.chisq=FALSE,
+           prop.t=FALSE,
+           prop.c=TRUE,
+           prop.r=FALSE)
+
+#tri croisé juste avec les effectifs autre méthode
+table(b$V0007,b$V0065)
+
+#je le mets en reserve dans un objet tab
+tab <- table(b$V0007,b$V0065)
+
+#test du khi 2
+chisq.test(tab)
+
+#autre methode pour avoir les frequences en ligne
+lprop(tab)
+
+#et en colonnes
+cprop(tab)
+
+
+#representation graphique du tableau
+mosaicplot(tab,xlab="passé scolaire", ylab="résultats actuels faibles")
+mosaicplot(tab, las = 3, shade = TRUE,
+           xlab="passé scolaire", ylab="résultats actuels faibles")
+#Chaque rectangle de ce graphique représente une case de tableau.
+#Sa largeur correspond au pourcentage des modalités en colonnes
+#Sa hauteur correspond aux pourcentages colonnes
+#Enfin, la couleur de la case correspond au résidu du test du Khi² correspondant :
+#les cases en rouge sont sous-représentées, les cases en bleu sur-représentées,
+#et les cases blanches sont proches des effectifs attendus sous l'hypothèse d'indépendance.
+
+
+#regression lineaire Intercept = ordonnee a l'origine ; l'autre indicateur est la pente
+lm(b$V0081 ~ b$V0082)
+
+
+
+
+#nuage de point deux variables quantitatives
+plot(b$V0081,b$V0082,xlab="moyenne éducation artistique ",
+     ylab='moyenne biologie')
+
+#rajouter la droite de regression au nuage de point
+reg<-lm(b$V0081 ~ b$V0082)
+summary(reg)
+plot(b$V0081 , b$V0082,xlab="moyenne éducation artistique ",
+     ylab='moyenne biologie')
+abline(reg, col="red")
+
+
+
+
+#boite a moustache
+  boxplot(b$V0254~b$V0882,
+          main="Totalité du temps de travail par semaine (en minutes)",
+          xlab='Mère diplômée du supérieur')
+  
+
+
+
