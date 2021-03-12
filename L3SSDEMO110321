@@ -1,0 +1,118 @@
+
+install.packages("questionr")
+install.packages("readr")
+install.packages("readxl")
+install.packages("devtools")
+install.packages("lattice")
+install.packages("gmodels")
+install.packages("questionr")
+install.packages("ade4")
+install.packages("effects")
+install.packages("broom")
+install.packages("JLutils")
+install.packages("explor")
+install.packages("RColorBrewer")
+
+
+#installer les packages suivants au cas ou on les utilise par la suite
+
+library(questionr)
+library(readr)
+library(readxl)
+library(devtools)
+library(lattice)
+library(gmodels)
+library(questionr)
+library(ade4)
+library(effects)
+library(broom)
+library(JLutils)
+library(explor)
+library(RColorBrewer)
+
+
+#etape de chargement des donnees
+d <- read_excel("D:/IDUP cours/L3/2020-2021/TD S2/Sequence1/DonneesTD1.xlsx")
+
+#pour afficher les donnees
+View(d)
+
+
+######## STATISTIQUES UNIVARIEE ET BIVARIEE ##########
+
+#tri a plat
+table(d$V0001)
+
+#pourcentage
+freq(d$V0001)
+
+copie(freq(d$V0001))
+
+#tableau croise variable quali juste les effectifs
+table(d$V0001,d$V0002)
+
+#tableau croise var quali avec % en lignes et en colonnes
+CrossTable(d$V0001,d$V0002)
+
+#pour charger la documentation sur une CrossTable
+?CrossTable
+
+
+#tableau croise que les % en lignes
+CrossTable(d$V0001,d$V0002,prop.r=TRUE, prop.c=FALSE,
+           prop.t=FALSE, prop.chisq=FALSE)
+
+
+
+#affichage des % en colonnes
+CrossTable(d$V0001,d$V0002,prop.r=FALSE, prop.c=TRUE,
+           prop.t=FALSE, prop.chisq=FALSE, chisq = FALSE)
+
+#afficher les eff theoriques a cote des eff observes
+
+CrossTable(d$V0001,d$V0002,prop.r=FALSE, prop.c=FALSE,
+           prop.t=FALSE, prop.chisq=FALSE,  expected=TRUE)
+
+
+#redoublement
+table(d$V0007)
+
+#resultats faibles
+table(d$V0065)
+
+#croisement des deux var
+table(d$V0007,d$V0065)
+
+CrossTable(d$V0007,d$V0065,expected=TRUE)
+
+##je le mets en reserve dans un objet tab
+tab <- table(d$V0007,d$V0065)
+
+
+tab
+
+#test du khi 2
+chisq.test(tab)
+
+
+#autre methode pour avoir les frequences en ligne
+lprop(tab)
+rprop(tab)
+
+#et en colonnes
+cprop(tab)
+
+
+#representation graphique du tableau
+
+mosaicplot(tab)
+
+
+#ajouter des titres aux axes du graph
+
+mosaicplot(tab,xlab='passé scolaire',ylab='résultats actuels faibles',
+           main='Influence du passé sur le présent')
+?mosaicplot
+
+mosaicplot(tab, las = 3, shade = TRUE,
+           xlab="passé scolaire", ylab="résultats actuels faibles")
