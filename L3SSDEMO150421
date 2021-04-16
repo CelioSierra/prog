@@ -1,0 +1,203 @@
+#a  installer
+install.packages("GGally")
+
+library(GGally)
+
+
+library(questionr)
+library(readr)
+library(readxl)
+library(devtools)
+library(lattice)
+library(gmodels)
+library(questionr)
+library(ade4)
+library(effects)
+library(broom)
+library(JLutils)
+library(explor)
+library(RColorBrewer)
+
+
+
+d4 <- read_excel("D:/IDUP cours/L3/2020-2021/TD S2/Séquence 4/DonneesTD4.xlsx")
+View(d4)
+
+
+
+  
+  
+##### 1) #####
+d4 <- read_excel("D:/IDUP cours/L3/2020-2021/TD S2/Séquence 4/DonneesTD4.xlsx")
+View(d4)
+
+##### 2) #####
+#moyenne
+
+mean(d4$`Esp Vie Naiss 2017`)
+
+
+mean(d4$`IDH 2017`)
+#variance
+var(d4$`IDH 2017`)
+#ecart-type
+sqrt(var(d4$`IDH 2017`))
+sd(d4$`IDH 2017`)
+
+#moyenne
+mean(d4$`PIB/tête (2017)`)
+#variance
+var(d4$`PIB/tête (2017)`)
+#ecart-type
+sqrt(var(d4$`PIB/tête (2017)`))
+sd(d4$`PIB/tête (2017)`)
+
+
+
+#moyenne
+mean(d4$`Esp Vie Naiss 2017`)
+#variance
+var(d4$`Esp Vie Naiss 2017`)
+#ecart-type
+sqrt(var(d4$`Esp Vie Naiss 2017`))
+sd(d4$`Esp Vie Naiss 2017`)
+
+
+#moyenne
+mean(d4$`Années éducation (2017)`)
+#variance
+var(d4$`Années éducation (2017)`)
+#ecart-type
+sqrt(var(d4$`Années éducation (2017)`))
+sd(d4$`Années éducation (2017)`)
+
+#moyenne
+mean(d4$`Population totale (2017)`)
+#variance
+var(d4$`Population totale (2017)`)
+#ecart-type
+sqrt(var(d4$`Population totale (2017)`))
+sd(d4$`Population totale (2017)`)
+
+
+#moyenne
+mean(d4$`Ratio Palma`,na.rm=T)
+#variance
+var(d4$`Ratio Palma`,na.rm=T)
+#ecart-type
+sqrt(var(d4$`Ratio Palma`,na.rm=T))
+sd(d4$`Ratio Palma`,na.rm=T)
+
+
+
+##### 3) #####
+#min Q1 Q2 Q3 max moyenne
+summary(d4$`Esp Vie Naiss 2017`)
+#afficher Q1
+quantile(d4$`Esp Vie Naiss 2017`,probs = seq(0.25, 0.25, 0.25), na.rm = TRUE)
+#afficher la mediane
+median(d4$`Esp Vie Naiss 2017`)
+#afficher Q3
+quantile(d4$`Esp Vie Naiss 2017`,probs = seq(0.75, 0.75, 0.25), na.rm = TRUE)
+#afficher D1 le 1er decile
+quantile(d4$`Esp Vie Naiss 2017`,probs = seq(0.1, 0.1, 0.1), na.rm = TRUE)
+#afficher D9 le dernier decile
+quantile(d4$`Esp Vie Naiss 2017`,probs = seq(0.9, 0.9, 0.1), na.rm = TRUE)
+
+##### 4) #####
+
+#boite a moustache
+boxplot(d4$`Esp Vie Naiss 2017`, 
+        main="Boîte à moustaches
+        Espérances de vie à la naissance
+        en 2017",
+        xlab='source : HDR UNDP',
+        col='purple',
+        ylab="annees")
+
+##### 5) #####
+
+# effectifs cumules
+cumsum(table(d4$`Esp Vie Naiss 2017`))
+
+#frequences cumulees
+freq(d4$`Esp Vie Naiss 2017`,cum=T)
+
+
+#fonction de répartition cumulée croissante
+ggplot(d4) +
+  aes(x = `Esp Vie Naiss 2017`) +
+  ggtitle("Pays européens") +
+  stat_ecdf() +
+  xlab("E0 en 2017") +
+  ylab("Fonction de répartition cumulée")
+
+##### 6) #####
+ hist(d4$`Esp Vie Naiss 2017` ,
+      main="Pays européens",
+      xlab="E0 en 2017",
+      ylab="Effectifs",
+      col= "azure")
+
+ggplot(d4) +
+  aes(x = `Esp Vie Naiss 2017`) +
+  geom_histogram(fill ="azure", colour = "black", binwidth = 5) +
+  geom_rug() +
+  ggtitle("Pays européens") +
+  xlab("E0 en 2017") +
+  ylab("Effectifs")
+
+
+##### 7) #####
+#covariance
+cov(d4$`IDH 2017`,d4$`Esp Vie Naiss 2017`)
+
+#coeff de correlation
+cor(d4$`IDH 2017`,d4$`Esp Vie Naiss 2017`,
+    method="pearson")
+
+
+#matrice de correlation
+#on enleve les variables non numeriques
+d4n<-d4[,-1]
+d4n<-d4n[,-7]
+d4n<-d4n[,-7]
+View(d4n)
+
+#on fait la matrice des covariances
+cov(d4n)
+
+#on fait la matrice de coeff de correlation
+cor(d4n)
+
+
+
+
+##### 8) #####
+
+
+reg <- lm(d4n$`PIB/tête (2017)` ~ d4n$`Esp Vie Naiss 2017`)
+
+plot(d4n$`Esp Vie Naiss 2017`,d4n$`PIB/tête (2017)` ,
+     xlab="E0 2017",
+     ylab='PIB/hab',
+     abline(reg,col='darkblue'),
+     pch=10)
+
+#autre option avec ggplot
+ggplot(d4,aes(`Esp Vie Naiss 2017`,`PIB/tête (2017)`))+
+  geom_point() +
+  geom_abline(intercept =-89404.5, slope=1505,color="darkblue" )
+
+
+
+##### 9) #####
+
+reg <- lm(d4n$`PIB/tête (2017)` ~ d4n$`Esp Vie Naiss 2017`)
+summary(reg)
+reg1 <- lm(d4n$`IDH 2017` ~ d4n$`Esp Vie Naiss 2017`)
+summary(reg1)
+reg2 <- lm(d4n$`Années éducation (2017)` ~ d4n$`Esp Vie Naiss 2017`)
+summary(reg2)
+reg3 <- lm(d4n$`Population totale (2017)` ~ d4n$`Esp Vie Naiss 2017`)
+summary(reg3)
